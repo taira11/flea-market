@@ -42,6 +42,9 @@ php artisan migrate
 php artisan migrate:fresh --seed
 
 ## 画像アップロードについて
+本課題では、採点時に画面表示を正しく確認できるよう  
+`storage/app/public` 配下にサンプル画像を含めています。
+
 プロフィール画像 storage/app/public/products/profiles に保存
 
 商品画像は torage/app/public/products/products に保存
@@ -50,12 +53,9 @@ php artisan storage:link により
 
 /public/storage から参照可能
 
-```bash
-docker-compose exec php bash 
-mkdir -p storage/app/public/products
-mkdir -p storage/app/public/profiles
+初回セットアップ時は、以下のコマンドを実行してください。
+
 php artisan storage:link
-```
 
 ## メール送信（Mailtrap）
 
@@ -67,7 +67,7 @@ php artisan storage:link
 
 1. https://mailtrap.io にアクセスしてアカウントを作成
 2. Sandbox を作成
-3. SMTP 設定を確認
+3. Code SamplesにてLaravelのバージョンを設定し SMTP 設定を確認
 4. `.env` に以下を設定
 
 ```env
@@ -76,7 +76,7 @@ MAIL_HOST=smtp.mailtrap.io
 MAIL_PORT=2525
 MAIL_USERNAME=xxxxxxxx
 MAIL_PASSWORD=xxxxxxxx
-MAIL_ENCRYPTION=null
+MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS=no-reply@example.com
 MAIL_FROM_NAME="COACHTECH フリマ"
 ```
@@ -163,6 +163,8 @@ php artisan test
 Stripe Checkout（テストモード）を使用
 
 最低決済金額の制約により、商品価格は120円以上に設定しています
+
+stripeを登録した後,APIキーを確認し.envに以下の内容を設定
 
 STRIPE_KEY=pk_test_xxxxx
 
