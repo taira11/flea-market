@@ -64,14 +64,6 @@
             <p class="trade-flash trade-flash--error">{{ session('error') }}</p>
         @endif
 
-        @if($errors->any())
-            <div class="trade-errors">
-                @foreach($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
-            </div>
-        @endif
-
         <div class="trade-messages">
             @foreach($transaction->messages->sortBy('created_at') as $message)
                 @include('trades.partials.message', [
@@ -82,35 +74,48 @@
             @endforeach
         </div>
 
-        <form
-            method="POST"
-            action="{{ route('trades.messages.store', $transaction->id) }}"
-            enctype="multipart/form-data"
-            class="trade-message-form"
-        >
-            @csrf
+        <div class="trade-form-area">
+            @if($errors->any())
+                <div class="trade-errors trade-errors--form">
+                    @foreach($errors->all() as $error)
+                        <p>{{ $error }}</p>
+                    @endforeach
+                </div>
+            @endif
 
-            <input
-                type="text"
-                name="body"
-                class="trade-message-form__input"
-                value="{{ old('body') }}"
-                placeholder="取引メッセージを記入してください"
+            <form
+                method="POST"
+                action="{{ route('trades.messages.store', $transaction->id) }}"
+                enctype="multipart/form-data"
+                class="trade-message-form"
+                id="tradeMessageForm"
             >
+                @csrf
 
-            <label class="trade-message-form__image-btn">
-                画像を追加
-                <input type="file" name="image" id="tradeImageInput" accept=".jpg,.jpeg,.png">
-            </label>
+                <input
+                    type="text"
+                    name="body"
+                    id="tradeMessageBodyInput"
+                    class="trade-message-form__input"
+                    value="{{ old('body') }}"
+                    placeholder="取引メッセージを記入してください"
+                    autocomplete="off"
+                >
 
-            <span class="trade-message-form__file-name" id="tradeImageName">
-                選択されていません
-            </span>
+                <label class="trade-message-form__image-btn">
+                    画像を追加
+                    <input type="file" name="image" id="tradeImageInput" accept=".jpg,.jpeg,.png">
+                </label>
 
-            <button type="submit" class="trade-message-form__submit">
-                <span>送信</span>
-            </button>
-        </form>
+                <span class="trade-message-form__file-name" id="tradeImageName">
+                    選択されていません
+                </span>
+
+                <button type="submit" class="trade-message-form__submit">
+                    <span>送信</span>
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -121,11 +126,29 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const openReviewModalButton = document.getElementById('openReviewModal');
-    const reviewModal = document.getElementById('reviewModal');
-    const reviewModalOverlay = document.getElementById('reviewModalOverlay');
-    const ratingInput = document.getElementById('ratingInput');
-    const stars = document.querySelectorAll('.review-star');
+    const storageKey = 'trade_message_body_{{ $transaction->id }}';
+    const tradeMessageForm = document.getElementById('tradeMessageForm');
+    const tradeMessageBodyInput = document.getElementById('tradeMessageBodyInput');
+
+    if (tradeMessageBodyInput) {
+        const currentValue = tradeMessageBodyInput.value;
+        const savedValue = localStorage.getItem(storageKey);
+
+        if (!currentValue && savedValue) {
+            tradeMessageBodyInput.value = savedValue;
+        }
+
+        tradeMessageBodyInput.addEventListener('input', function () {
+            localStorage.setItem(storageKey, tradeMessageBodyInput.value);
+        });
+    }
+
+    if (tradeMessageForm) {
+        tradeMessageForm.addEventListener('submit', function () {
+            localStorage.removeItem(storageKey);
+        });
+    }
+
     const tradeImageInput = document.getElementById('tradeImageInput');
     const tradeImageName = document.getElementById('tradeImageName');
 
@@ -140,6 +163,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    const openReviewModalButton = document.getElementById('openReviewModal');
+    const reviewModal = document.getElementById('reviewModal');
+    const reviewModalOverlay = document.getElementById('reviewModalOverlay');
+    const ratingInput = document.getElementById('ratingInput');
+    const stars = document.querySelectorAll('.review-star');
 
     if (openReviewModalButton && reviewModal) {
         openReviewModalButton.addEventListener('click', function () {

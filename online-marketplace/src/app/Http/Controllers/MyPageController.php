@@ -19,12 +19,15 @@ class MyPageController extends Controller
         $items = collect();
         $transactions = collect();
 
-        $tradingTransactions = Transaction::with(['product', 'messages'])
+        $tradingTransactions = Transaction::query()
+            ->with(['product', 'messages'])
+            ->withMax('messages', 'created_at')
             ->whereNull('completed_at')
             ->where(function ($query) use ($user) {
                 $query->where('buyer_id', $user->id)
                     ->orWhere('seller_id', $user->id);
             })
+            ->orderByDesc('messages_max_created_at')
             ->orderByDesc('purchased_at')
             ->get();
 
