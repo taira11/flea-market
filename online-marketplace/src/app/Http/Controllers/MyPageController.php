@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\ProfileRequest;
 use App\Models\Product;
+use App\Models\Transaction;
 
 class MyPageController extends Controller
 {
@@ -14,31 +15,72 @@ class MyPageController extends Controller
         $user    = Auth::user();
         $tab     = $request->query('tab', 'selling');
         $keyword = $request->query('keyword');
-        $page    = $request->query('page', 'sell');
+
+        $items = collect();
+        $transactions = collect();
+
+        $tradingTransactions = Transaction::with(['product', 'messages'])
+            ->whereNull('completed_at')
+            ->where(function ($query) use ($user) {
+                $query->where('buyer_id', $user->id)
+                    ->orWhere('seller_id', $user->id);
+            })
+            ->orderByDesc('purchased_at')
+            ->get();
+
+        $tradingUnreadCount = $tradingTransactions->sum(function ($transaction) use ($user) {
+            return $transaction->unreadMessagesCountFor($user->id);
+        });
 
         if ($tab === 'selling') {
+            $page = 'sell';
+
             $items = Product::where('seller_id', $user->id)
-            ->when($keyword, function ($q) use ($keyword) {
-                $q->where('name', 'LIKE', "%{$keyword}%");
-            })
-            ->get();
-        } else {
-            $items = Product::whereIn(
-                'id',
-                $user->purchases()->pluck('product_id')
-                )
                 ->when($keyword, function ($q) use ($keyword) {
                     $q->where('name', 'LIKE', "%{$keyword}%");
                 })
                 ->get();
+        } elseif ($tab === 'bought') {
+            $page = 'buy';
+
+            $items = Product::whereIn(
+                'id',
+                $user->purchases()->pluck('product_id')
+            )
+                ->when($keyword, function ($q) use ($keyword) {
+                    $q->where('name', 'LIKE', "%{$keyword}%");
+                })
+                ->get();
+        } elseif ($tab === 'trading') {
+            $page = 'trade';
+
+            $transactions = $tradingTransactions->filter(function ($transaction) use ($keyword) {
+                if (!$keyword) {
+                    return true;
+                }
+
+                return $transaction->product
+                    && strpos($transaction->product->name, $keyword) !== false;
+            });
+        } else {
+            return redirect('/mypage');
         }
-            return view('mypage.index', compact('page', 'items', 'tab', 'keyword'));
+
+        return view('mypage.index', compact(
+            'page',
+            'items',
+            'transactions',
+            'tab',
+            'keyword',
+            'tradingUnreadCount'
+        ));
     }
 
     public function edit()
     {
         $user    = Auth::user();
         $profile = $user->profile ?? null;
+
         return view('mypage.edit', compact('user', 'profile'));
     }
 
@@ -68,6 +110,7 @@ class MyPageController extends Controller
         }
 
         $profile->save();
+
         return redirect('/mypage')->with('message', 'プロフィールを更新しました！');
     }
 }

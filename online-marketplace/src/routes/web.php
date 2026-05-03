@@ -1,16 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\AuthenticatedSessionController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\MyPageController;
 use App\Http\Controllers\PurchaseController;
-use App\Http\Controllers\RegisteredUserController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\TradeController;
 use Laravel\Fortify\Fortify;
 
 /*
@@ -23,12 +22,12 @@ use Laravel\Fortify\Fortify;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
 Route::get('/', [ItemController::class, 'index']);
 Route::get('/item/{item_id}', [ItemController::class, 'show']);
 
 Fortify::registerView(fn() => view('auth.register'));
 Fortify::loginView(fn() => view('auth.login'));
-
 
 Route::post('/login', [AuthenticatedSessionController::class, 'store'])
     ->name('login');
@@ -49,42 +48,58 @@ Route::post('/email/verification-notification', function (Request $request) {
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/mypage', [MyPageController::class, 'index'])
-         ->middleware('verified')
-         ->name('mypage.index');
+        ->middleware('verified')
+        ->name('mypage.index');
 
     Route::get('/mypage/edit', [MyPageController::class, 'edit'])
-         ->middleware('verified')
-         ->name('mypage.edit');
+        ->middleware('verified')
+        ->name('mypage.edit');
 
     Route::post('/mypage/edit', [MyPageController::class, 'update'])
-         ->middleware('auth')
-         ->middleware('verified');
+        ->middleware('verified');
 
     Route::get('/purchase/{item_id}', [PurchaseController::class, 'index'])
-        ->middleware('auth')
         ->name('purchase.index');
 
-    Route::post('/purchase/{item_id}', [PurchaseController::class, 'store'])
-        ->middleware('auth');
+    Route::post('/purchase/{item_id}', [PurchaseController::class, 'store']);
 
     Route::get('/purchase/address/{item_id}', [PurchaseController::class, 'address'])
-         ->middleware('verified');
+        ->middleware('verified');
 
     Route::post('/purchase/address/{item_id}', [PurchaseController::class, 'updateAddress'])
-         ->middleware('verified');
+        ->middleware('verified');
 
-    Route::get('/sell', [ItemController::class, 'create'])->middleware('verified');
-    Route::post('/sell', [ItemController::class, 'store'])->middleware('verified');
+    Route::get('/purchase/{item_id}/success', [PurchaseController::class, 'success'])
+        ->name('purchase.success');
+
+    Route::get('/sell', [ItemController::class, 'create'])
+        ->middleware('verified');
+
+    Route::post('/sell', [ItemController::class, 'store'])
+        ->middleware('verified');
 
     Route::post('/item/{product_id}/favorite', [FavoriteController::class, 'toggle'])
-         ->middleware('auth')
-         ->name('item.favorite');
+        ->name('item.favorite');
 
-    Route::get('/purchase/{item_id}/success',
-    [PurchaseController::class, 'success'])
-        ->name('purchase.success')
-        ->middleware('auth');
+    Route::post('/item/{item_id}/comment', [CommentController::class, 'store']);
 
-    Route::post('/item/{item_id}/comment', [CommentController::class, 'store'])
-        ->middleware('auth');
+    Route::get('/trades/{transaction}', [TradeController::class, 'show'])
+        ->middleware('verified')
+        ->name('trades.show');
+
+    Route::post('/trades/{transaction}/messages', [TradeController::class, 'storeMessage'])
+        ->middleware('verified')
+        ->name('trades.messages.store');
+
+    Route::put('/trades/{transaction}/messages/{message}', [TradeController::class, 'updateMessage'])
+        ->middleware('verified')
+        ->name('trades.messages.update');
+
+    Route::delete('/trades/{transaction}/messages/{message}', [TradeController::class, 'destroyMessage'])
+        ->middleware('verified')
+        ->name('trades.messages.destroy');
+
+    Route::post('/trades/{transaction}/complete', [TradeController::class, 'complete'])
+        ->middleware('verified')
+        ->name('trades.complete');
 });

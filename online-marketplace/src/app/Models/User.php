@@ -41,6 +41,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
     public function profile()
     {
         return $this->hasOne(Profile::class);
@@ -69,5 +70,25 @@ class User extends Authenticatable implements MustVerifyEmail
     public function sales()
     {
         return $this->hasMany(Transaction::class, 'seller_id');
+    }
+
+    public function sentTransactionMessages()
+    {
+        return $this->hasMany(TransactionMessage::class, 'sender_id');
+    }
+
+    public function givenReviews()
+    {
+        return $this->hasMany(TransactionReview::class, 'reviewer_id');
+    }
+
+    public function receivedReviews()
+    {
+        return $this->hasMany(TransactionReview::class, 'reviewee_id');
+    }
+
+    public function getAverageRatingAttribute()
+    {
+        return round($this->receivedReviews()->avg('rating') ?? 0, 1);
     }
 }

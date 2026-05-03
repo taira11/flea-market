@@ -42,6 +42,7 @@
     font-size: 14px;
     overflow: hidden;
 }
+
 .profile-image-btn input {
     position: absolute;
     inset: 0;
@@ -110,27 +111,57 @@
     object-fit: cover;
 }
 
+.mypage-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mypage-username {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.mypage-rating {
+    display: flex;
+    gap: 2px;
+}
+
+.mypage-rating__star {
+    color: #d9d9d9;
+    font-size: 24px;
+    line-height: 1;
+}
+
+.mypage-rating__star.is-active {
+    color: #fff048;
+}
+
 .mypage-edit-btn {
     margin-left: auto;
-    padding: 6px 14px;
+    padding: 8px 18px;
     border: 1px solid #ff5a5a;
     border-radius: 5px;
     color: #ff5a5a;
     text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
 }
 
 .mypage-tabs {
-    position: relative;
     display: flex;
-    gap: 40px;
-    margin-top: 30px;
+    gap: 48px;
+    margin-top: 34px;
 }
 
 .mypage-tab {
-    padding: 6px 0;
-    color: #666;
-    text-decoration: none;
     position: relative;
+    padding: 8px 0;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
 }
 
 .mypage-tab:hover {
@@ -138,57 +169,60 @@
 }
 
 .mypage-tab.active {
-    color: #ff5a5a;
+    color: #ff0000;
 }
 
-.mypage-tabs::after {
-    content: "";
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 100px;
-    height: 2px;
-    background-color: #ff5a5a;
-    transition: transform 0.3s ease;
-}
-
-.mypage-tabs:has(.mypage-tab.active:nth-child(1))::after {
-    transform: translateX(0);
-}
-
-.mypage-tabs:has(.mypage-tab.active:nth-child(2))::after {
-    transform: translateX(140px);
+.mypage-tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    margin-left: 5px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #ff0000;
+    color: #fff;
+    font-size: 11px;
+    line-height: 18px;
 }
 
 .mypage-line {
     width: 100%;
     height: 1px;
-    background: #ddd;
-    margin-top: 10px;
+    background: #777;
+    margin-top: 0;
 }
 
 .mypage-items {
     display: flex;
     flex-wrap: wrap;
-    gap: 30px;
-    margin-top: 30px;
+    gap: 48px;
+    margin-top: 40px;
 }
 
 .mypage-item-card {
+    position: relative;
     width: 180px;
     color: #000;
     text-decoration: none;
 }
 
+.mypage-item-card:hover {
+    opacity: 0.85;
+}
+
 .mypage-item-name {
+    margin: 8px 0 0;
     color: #000;
     text-decoration: none;
+    font-size: 14px;
 }
 
 .mypage-item-image {
-    width: 200px;
-    height: 200px;
-    background: #eee;
+    width: 180px;
+    height: 180px;
+    background: #d9d9d9;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -201,8 +235,67 @@
     object-fit: cover;
 }
 
+.mypage-item-image span {
+    font-size: 18px;
+    color: #333;
+}
+
 .mypage-item-card--sold,
 .mypage-item-card--sold * {
     pointer-events: none !important;
     cursor: not-allowed;
+}
+
+.mypage-item-card--trade {
+    display: block;
+}
+
+.mypage-trade-badge {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #ff0000;
+    color: #fff;
+    font-size: 11px;
+    line-height: 18px;
+}
+
+.mypage-empty-text {
+    color: #555;
+    font-size: 14px;
+}
+
+@media (max-width: 850px) {
+    .mypage-container {
+        width: 86%;
+    }
+
+    .mypage-header {
+        gap: 28px;
+    }
+
+    .mypage-tabs {
+        gap: 36px;
+    }
+
+    .mypage-items {
+        gap: 36px;
+    }
+
+    .mypage-item-card,
+    .mypage-item-image {
+        width: 160px;
+    }
+
+    .mypage-item-image {
+        height: 160px;
+    }
 }

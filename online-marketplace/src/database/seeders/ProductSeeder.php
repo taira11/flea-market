@@ -14,6 +14,9 @@ class ProductSeeder extends Seeder
      */
     public function run()
     {
+        $seller1 = DB::table('users')->where('email', 'seller1@example.com')->first();
+        $seller2 = DB::table('users')->where('email', 'seller2@example.com')->first();
+
         $products = [
             [
                 'name' => '腕時計',
@@ -22,6 +25,8 @@ class ProductSeeder extends Seeder
                 'description' => 'スタイリッシュなデザインのメンズ腕時計',
                 'image' => 'products/watch.jpg',
                 'status' => 4,
+                'seller_id' => $seller1->id,
+                'category_ids' => [1, 5],
             ],
             [
                 'name' => 'HDD',
@@ -30,6 +35,8 @@ class ProductSeeder extends Seeder
                 'description' => '高速で信頼性の高いハードディスク',
                 'image' => 'products/hdd.jpg',
                 'status' => 3,
+                'seller_id' => $seller1->id,
+                'category_ids' => [2],
             ],
             [
                 'name' => '玉ねぎ3束',
@@ -38,6 +45,8 @@ class ProductSeeder extends Seeder
                 'description' => '新鮮な玉ねぎ3束のセット',
                 'image' => 'products/onion.jpg',
                 'status' => 2,
+                'seller_id' => $seller1->id,
+                'category_ids' => [10],
             ],
             [
                 'name' => '革靴',
@@ -46,6 +55,8 @@ class ProductSeeder extends Seeder
                 'description' => 'クラシックなデザインの革靴',
                 'image' => 'products/shoes.jpg',
                 'status' => 1,
+                'seller_id' => $seller1->id,
+                'category_ids' => [1, 5],
             ],
             [
                 'name' => 'ノートPC',
@@ -54,6 +65,8 @@ class ProductSeeder extends Seeder
                 'description' => '高性能なノートパソコン',
                 'image' => 'products/laptop.jpg',
                 'status' => 4,
+                'seller_id' => $seller1->id,
+                'category_ids' => [2],
             ],
             [
                 'name' => 'マイク',
@@ -62,6 +75,8 @@ class ProductSeeder extends Seeder
                 'description' => '高音質のレコーディング用マイク',
                 'image' => 'products/mic.jpg',
                 'status' => 3,
+                'seller_id' => $seller2->id,
+                'category_ids' => [2],
             ],
             [
                 'name' => 'ショルダーバッグ',
@@ -70,6 +85,8 @@ class ProductSeeder extends Seeder
                 'description' => 'おしゃれなショルダーバッグ',
                 'image' => 'products/bag.jpg',
                 'status' => 2,
+                'seller_id' => $seller2->id,
+                'category_ids' => [1, 4],
             ],
             [
                 'name' => 'タンブラー',
@@ -78,6 +95,8 @@ class ProductSeeder extends Seeder
                 'description' => '使いやすいタンブラー',
                 'image' => 'products/tumbler.jpg',
                 'status' => 1,
+                'seller_id' => $seller2->id,
+                'category_ids' => [10],
             ],
             [
                 'name' => 'コーヒーミル',
@@ -86,6 +105,8 @@ class ProductSeeder extends Seeder
                 'description' => '手動のコーヒーミル',
                 'image' => 'products/coffee_mill.jpg',
                 'status' => 4,
+                'seller_id' => $seller2->id,
+                'category_ids' => [10],
             ],
             [
                 'name' => 'メイクセット',
@@ -94,21 +115,39 @@ class ProductSeeder extends Seeder
                 'description' => '便利なメイクアップセット',
                 'image' => 'products/makeup.jpg',
                 'status' => 3,
+                'seller_id' => $seller2->id,
+                'category_ids' => [6],
             ],
         ];
 
         foreach ($products as $product) {
-            DB::table('products')->insert([
-                'seller_id'   => 1,
-                'name'        => $product['name'],
-                'brand'       => $product['brand'],
+            $categoryIds = $product['category_ids'];
+            unset($product['category_ids']);
+
+            $productId = DB::table('products')->insertGetId([
+                'seller_id' => $product['seller_id'],
+                'name' => $product['name'],
+                'brand' => $product['brand'],
                 'description' => $product['description'],
-                'price'       => $product['price'],
-                'image'       => $product['image'],
-                'status'      => $product['status'],
-                'created_at'  => now(),
-                'updated_at'  => now(),
+                'price' => $product['price'],
+                'image' => $product['image'],
+                'status' => $product['status'],
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
+
+            foreach ($categoryIds as $categoryId) {
+                DB::table('product_categories')->updateOrInsert(
+                    [
+                        'product_id' => $productId,
+                        'category_id' => $categoryId,
+                    ],
+                    [
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]
+                );
+            }
         }
     }
 }
