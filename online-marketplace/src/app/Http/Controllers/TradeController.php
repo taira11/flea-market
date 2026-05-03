@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TransactionMessageRequest;
+use App\Mail\TransactionCompletedMail;
 use App\Models\Transaction;
 use App\Models\TransactionMessage;
 use App\Models\TransactionReview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use App\Mail\TransactionCompletedMail;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class TradeController extends Controller
 {
@@ -38,10 +38,15 @@ class TradeController extends Controller
         $otherTransactions = Transaction::query()
             ->with(['product', 'messages'])
             ->withMax('messages', 'created_at')
-            ->whereNull('completed_at')
             ->where(function ($query) use ($userId) {
-                $query->where('buyer_id', $userId)
-                    ->orWhere('seller_id', $userId);
+                $query->where(function ($q) use ($userId) {
+                    $q->where('buyer_id', $userId)
+                        ->whereNull('buyer_completed_at');
+                })
+                ->orWhere(function ($q) use ($userId) {
+                    $q->where('seller_id', $userId)
+                        ->whereNull('seller_completed_at');
+                });
             })
             ->where('id', '!=', $transaction->id)
             ->orderByDesc('messages_max_created_at')
@@ -172,7 +177,7 @@ class TradeController extends Controller
             ]);
 
             Mail::to($transaction->seller->email)
-            ->send(new TransactionCompletedMail($transaction));
+                ->send(new TransactionCompletedMail($transaction));
         } else {
             $transaction->update([
                 'seller_completed_at' => now(),

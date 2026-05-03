@@ -22,10 +22,15 @@ class MyPageController extends Controller
         $tradingTransactions = Transaction::query()
             ->with(['product', 'messages'])
             ->withMax('messages', 'created_at')
-            ->whereNull('completed_at')
             ->where(function ($query) use ($user) {
-                $query->where('buyer_id', $user->id)
-                    ->orWhere('seller_id', $user->id);
+                $query->where(function ($q) use ($user) {
+                    $q->where('buyer_id', $user->id)
+                        ->whereNull('buyer_completed_at');
+                })
+                ->orWhere(function ($q) use ($user) {
+                    $q->where('seller_id', $user->id)
+                        ->whereNull('seller_completed_at');
+                });
             })
             ->orderByDesc('messages_max_created_at')
             ->orderByDesc('purchased_at')
@@ -38,7 +43,8 @@ class MyPageController extends Controller
         if ($tab === 'selling') {
             $page = 'sell';
 
-            $items = Product::where('seller_id', $user->id)
+            $items = Product::with('transaction')
+                ->where('seller_id', $user->id)
                 ->when($keyword, function ($q) use ($keyword) {
                     $q->where('name', 'LIKE', "%{$keyword}%");
                 })
@@ -46,10 +52,11 @@ class MyPageController extends Controller
         } elseif ($tab === 'bought') {
             $page = 'buy';
 
-            $items = Product::whereIn(
-                'id',
-                $user->purchases()->pluck('product_id')
-            )
+            $items = Product::with('transaction')
+                ->whereIn(
+                    'id',
+                    $user->purchases()->pluck('product_id')
+                )
                 ->when($keyword, function ($q) use ($keyword) {
                     $q->where('name', 'LIKE', "%{$keyword}%");
                 })
