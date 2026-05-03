@@ -360,3 +360,133 @@ MAIL_FROM_NAME="COACHTECH フリマ"
 php artisan config:clear
 php artisan cache:clear
 ```
+---
+
+## ER図
+
+```mermaid
+erDiagram
+    users ||--o| profiles : has
+    users ||--o{ products : sells
+    users ||--o{ favorites : likes
+    users ||--o{ comments : posts
+    users ||--o{ transactions : buys
+    users ||--o{ transactions : sells
+    users ||--o{ transaction_messages : sends
+    users ||--o{ transaction_reviews : reviews
+    users ||--o{ transaction_reviews : receives
+
+    products ||--o{ product_categories : has
+    categories ||--o{ product_categories : belongs
+    products ||--o{ comments : has
+    products ||--o{ favorites : has
+    products ||--o| transactions : sold_as
+
+    transactions ||--o{ transaction_messages : has
+    transactions ||--o{ transaction_reviews : has
+
+    users {
+        bigint id PK
+        varchar name
+        varchar email
+        timestamp email_verified_at
+        varchar password
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    profiles {
+        bigint id PK
+        bigint user_id FK
+        varchar nickname
+        varchar postal_code
+        varchar address
+        varchar building
+        varchar profile_image
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    products {
+        bigint id PK
+        bigint seller_id FK
+        integer status
+        varchar name
+        varchar brand
+        text description
+        integer price
+        varchar image
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    categories {
+        bigint id PK
+        varchar name
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    product_categories {
+        bigint product_id FK
+        bigint category_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    transactions {
+        bigint id PK
+        bigint product_id FK
+        bigint seller_id FK
+        bigint buyer_id FK
+        integer price
+        varchar payment_method
+        text shipping_address
+        integer status
+        timestamp purchased_at
+        timestamp buyer_completed_at
+        timestamp seller_completed_at
+        timestamp completed_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    transaction_messages {
+        bigint id PK
+        bigint transaction_id FK
+        bigint sender_id FK
+        text body
+        varchar image_path
+        timestamp read_at
+        timestamp edited_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    transaction_reviews {
+        bigint id PK
+        bigint transaction_id FK
+        bigint reviewer_id FK
+        bigint reviewee_id FK
+        tinyint rating
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    favorites {
+        bigint id PK
+        bigint user_id FK
+        bigint product_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    comments {
+        bigint id PK
+        bigint user_id FK
+        bigint product_id FK
+        text comment
+        timestamp created_at
+        timestamp updated_at
+    }
+```
